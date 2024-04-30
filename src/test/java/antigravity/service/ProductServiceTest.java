@@ -67,7 +67,7 @@ class ProductServiceTest {
         Promotion promotion2 = Promotion.builder()
                 .promotionType(PromotionType.CODE)
                 .name("15% 할인코드")
-                .discountType(DiscountType.WON)
+                .discountType(DiscountType.PERCENT)
                 .discountValue(15)
                 .useStartedAt(LocalDate.now())
                 .useEndedAt(LocalDate.now().plusMonths(1))
@@ -214,7 +214,7 @@ class ProductServiceTest {
         // then
         assertThatThrownBy(() -> productService.getProductAmount(request))
                 .isInstanceOf(ProductException.class)
-                .hasMessageContaining(UNMATCHED_PROMOTION.getMessage());
+                .hasMessageContaining(NOT_FOUND_PROMOTION.getMessage());
     }
 
     @Test
@@ -224,7 +224,7 @@ class ProductServiceTest {
         Promotion promotion = Promotion.builder()
                 .promotionType(PromotionType.CODE)
                 .name("15% 할인코드")
-                .discountType(DiscountType.WON)
+                .discountType(DiscountType.PERCENT)
                 .discountValue(15)
                 .useStartedAt(LocalDate.now())
                 .useEndedAt(LocalDate.now().plusMonths(1))
