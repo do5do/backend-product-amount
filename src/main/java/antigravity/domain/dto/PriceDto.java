@@ -1,4 +1,4 @@
-package antigravity.domain.entity.dto;
+package antigravity.domain.dto;
 
 public record PriceDto(
         Integer price,

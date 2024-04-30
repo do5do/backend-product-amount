@@ -2,7 +2,7 @@ package antigravity.service;
 
 import antigravity.domain.entity.Product;
 import antigravity.domain.entity.Promotion;
-import antigravity.domain.entity.dto.PriceDto;
+import antigravity.domain.dto.PriceDto;
 import antigravity.exception.ProductException;
 import antigravity.model.request.ProductInfoRequest;
 import antigravity.model.response.ProductAmountResponse;

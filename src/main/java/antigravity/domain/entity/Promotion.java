@@ -1,9 +1,9 @@
 package antigravity.domain.entity;
 
-import antigravity.domain.entity.common.BaseTimeEntity;
-import antigravity.domain.entity.dto.PriceDto;
-import antigravity.domain.entity.type.DiscountType;
-import antigravity.domain.entity.type.PromotionType;
+import antigravity.domain.common.BaseTimeEntity;
+import antigravity.domain.dto.PriceDto;
+import antigravity.domain.type.DiscountType;
+import antigravity.domain.type.PromotionType;
 import antigravity.exception.ProductException;
 import lombok.AccessLevel;
 import lombok.Builder;

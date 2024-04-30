@@ -2,8 +2,8 @@ package antigravity.service;
 
 import antigravity.domain.entity.Product;
 import antigravity.domain.entity.Promotion;
-import antigravity.domain.entity.type.DiscountType;
-import antigravity.domain.entity.type.PromotionType;
+import antigravity.domain.type.DiscountType;
+import antigravity.domain.type.PromotionType;
 import antigravity.exception.ProductException;
 import antigravity.model.request.ProductInfoRequest;
 import antigravity.model.response.ProductAmountResponse;

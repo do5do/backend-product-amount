@@ -1,6 +1,6 @@
 package antigravity.domain.entity;
 
-import antigravity.domain.entity.common.BaseTimeEntity;
+import antigravity.domain.common.BaseTimeEntity;
 import antigravity.exception.ProductException;
 import lombok.AccessLevel;
 import lombok.Builder;

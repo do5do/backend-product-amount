@@ -1,4 +1,4 @@
-package antigravity.domain.entity.common;
+package antigravity.domain.common;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;

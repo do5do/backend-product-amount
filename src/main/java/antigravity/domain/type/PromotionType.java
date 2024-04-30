@@ -1,4 +1,4 @@
-package antigravity.domain.entity.type;
+package antigravity.domain.type;
 
 public enum PromotionType {
     COUPON, CODE
