@@ -1,11 +1,13 @@
 package antigravity.model.request;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+import java.util.List;
+
+@Getter
 @Builder
 public class ProductInfoRequest {
-    private int productId;
-    private int[] couponIds;
+    private Long productId;
+    private List<Long> couponIds;
 }

@@ -1,16 +1,22 @@
 package antigravity.domain.entity;
 
 import antigravity.domain.entity.common.BaseTimeEntity;
+import antigravity.exception.ProductException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import static antigravity.exception.ErrorCode.INVALID_PRODUCT_PRICE;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class Product extends BaseTimeEntity {
+    private static final Integer MIN_PRICE = 10_000;
+    private static final Integer MAX_PRICE = 10_000_000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,4 +26,10 @@ public class Product extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Integer price;
+
+    public void validatePrice() {
+        if (price < MIN_PRICE || price > MAX_PRICE) {
+            throw new ProductException(INVALID_PRODUCT_PRICE);
+        }
+    }
 }
