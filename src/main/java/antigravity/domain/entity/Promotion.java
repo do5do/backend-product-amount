@@ -1,18 +1,40 @@
 package antigravity.domain.entity;
 
-import lombok.Builder;
-import lombok.Data;
+import antigravity.domain.entity.common.BaseTimeEntity;
+import antigravity.domain.entity.type.DiscountType;
+import antigravity.domain.entity.type.PromotionType;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import javax.persistence.*;
+import java.time.LocalDate;
 
-@Data
-@Builder
-public class Promotion {
-    private int id;
-    private String promotion_type; //쿠폰 타입 (쿠폰, 코드)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+public class Promotion extends BaseTimeEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "promotion_type", nullable = false)
+    private PromotionType promotionType; //쿠폰 타입 (쿠폰, 코드)
+
+    @Column(nullable = false)
     private String name;
-    private String discount_type; // WON : 금액 할인, PERCENT : %할인
-    private int discount_value; // 할인 금액 or 할인 %
-    private Date use_started_at; // 쿠폰 사용가능 시작 기간
-    private Date use_ended_at; // 쿠폰 사용가능 종료 기간
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type", nullable = false)
+    private DiscountType discountType; // WON : 금액 할인, PERCENT : %할인
+
+    @Column(nullable = false)
+    private Integer discountValue; // 할인 금액 or 할인 %
+
+    @Column(nullable = false)
+    private LocalDate useStartedAt; // 쿠폰 사용 가능 시작 기간
+
+    @Column(nullable = false)
+    private LocalDate useEndedAt; // 쿠폰 사용 가능 종료 기간
 }

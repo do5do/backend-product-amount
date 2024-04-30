@@ -1,12 +1,23 @@
 package antigravity.domain.entity;
 
-import lombok.Builder;
-import lombok.Data;
+import antigravity.domain.entity.common.BaseTimeEntity;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-public class Product {
-    private int id;
+import javax.persistence.*;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+public class Product extends BaseTimeEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String name;
-    private int price;
+
+    @Column(nullable = false)
+    private Integer price;
 }
