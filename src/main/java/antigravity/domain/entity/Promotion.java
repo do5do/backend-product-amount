@@ -6,6 +6,7 @@ import antigravity.domain.entity.type.DiscountType;
 import antigravity.domain.entity.type.PromotionType;
 import antigravity.exception.ProductException;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,6 +43,18 @@ public class Promotion extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate useEndedAt; // 쿠폰 사용 가능 종료 기간
 
+    @Builder
+    public Promotion(PromotionType promotionType, String name,
+                     DiscountType discountType, Integer discountValue,
+                     LocalDate useStartedAt, LocalDate useEndedAt) {
+        this.promotionType = promotionType;
+        this.name = name;
+        this.discountType = discountType;
+        this.discountValue = discountValue;
+        this.useStartedAt = useStartedAt;
+        this.useEndedAt = useEndedAt;
+    }
+
     public PriceDto calculatePrice(Integer price) {
         Integer discount = discountValue;
 
@@ -52,7 +65,7 @@ public class Promotion extends BaseTimeEntity {
                 }
             }
             case CODE -> {
-                if (discountType != DiscountType.PERCENT) {
+                if (discountType != DiscountType.PERCENT || discountValue > 100) {
                     throw new ProductException(INVALID_REQUEST);
                 }
 

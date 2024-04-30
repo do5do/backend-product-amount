@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,7 +27,7 @@ public class ProductController {
     private ProductInfoRequest getParam() {
         return ProductInfoRequest.builder()
                 .productId(1L)
-                .couponIds(new ArrayList<>(List.of(1L, 2L)))
+                .couponIds(List.of(1L, 2L))
                 .build();
     }
 }

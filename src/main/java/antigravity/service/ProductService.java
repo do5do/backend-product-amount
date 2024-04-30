@@ -52,6 +52,10 @@ public class ProductService {
     }
 
     private void validatePromotion(Product product, List<Promotion> promotions) {
+        if (promotions.isEmpty()) {
+            throw new ProductException(NOT_FOUND_PROMOTION);
+        }
+
         // 유효 시간 확인
         LocalDate now = LocalDate.now();
         promotions.forEach(promotion -> {
@@ -63,8 +67,7 @@ public class ProductService {
         });
 
         // 매핑 확인
-        if (promotions.isEmpty() || !promotionProductsRepository
-                .existsByProductAndPromotionIn(product, promotions)) {
+        if (!promotionProductsRepository.existsByProductAndPromotionIn(product, promotions)) {
             throw new ProductException(UNMATCHED_PROMOTION, String.format(ADD_NAME,
                     product.getName(), UNMATCHED_PROMOTION.getMessage()));
         }

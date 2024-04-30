@@ -3,6 +3,7 @@ package antigravity.domain.entity;
 import antigravity.domain.entity.common.BaseTimeEntity;
 import antigravity.exception.ProductException;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,6 +27,12 @@ public class Product extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Integer price;
+
+    @Builder
+    public Product(String name, Integer price) {
+        this.name = name;
+        this.price = price;
+    }
 
     public void validatePrice() {
         if (price < MIN_PRICE || price > MAX_PRICE) {
