@@ -2,7 +2,6 @@ package antigravity.service;
 
 import antigravity.domain.entity.Product;
 import antigravity.domain.entity.Promotion;
-import antigravity.domain.dto.PriceDto;
 import antigravity.exception.ProductException;
 import antigravity.model.request.ProductInfoRequest;
 import antigravity.model.response.ProductAmountResponse;
@@ -39,16 +38,11 @@ public class ProductService {
 
     private ProductAmountResponse applyPromotion(
             Product product, List<Promotion> promotions) {
-        ProductAmountResponse response = ProductAmountResponse.fromEntity(product);
+        Integer totalDiscount = promotions.stream()
+                .mapToInt(o -> o.getDiscountValue(product.getPrice()))
+                .sum();
 
-        promotions.forEach(promotion -> {
-            PriceDto priceDto = promotion.calculatePrice(response.getFinalPrice());
-            response.addPriceAndDiscount(priceDto.price(),
-                    priceDto.discountValue());
-        });
-
-        response.truncateFinalPrice();
-        return response;
+        return ProductAmountResponse.from(product, totalDiscount);
     }
 
     private void validatePromotion(Product product, List<Promotion> promotions) {

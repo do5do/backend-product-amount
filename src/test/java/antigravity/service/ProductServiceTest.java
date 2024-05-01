@@ -89,7 +89,7 @@ class ProductServiceTest {
         ProductAmountResponse response = productService.getProductAmount(request);
 
         // then
-        int totalDiscount = 30000 + (int) ((215000 - 30000) * 0.15);
+        int totalDiscount = 30000 + (int) (215000 * 0.15);
         int finalPrice = (215000 - totalDiscount) / 1000 * 1000;
 
         assertEquals(totalDiscount, response.getDiscountPrice());

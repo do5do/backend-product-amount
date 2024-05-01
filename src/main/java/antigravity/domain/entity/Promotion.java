@@ -1,7 +1,6 @@
 package antigravity.domain.entity;
 
 import antigravity.domain.common.BaseTimeEntity;
-import antigravity.domain.dto.PriceDto;
 import antigravity.domain.type.DiscountType;
 import antigravity.domain.type.PromotionType;
 import antigravity.exception.ProductException;
@@ -55,8 +54,8 @@ public class Promotion extends BaseTimeEntity {
         this.useEndedAt = useEndedAt;
     }
 
-    public PriceDto calculatePrice(Integer price) {
-        Integer discount = discountValue;
+    public Integer getDiscountValue(Integer price) {
+        Integer discountValue = this.discountValue;
 
         switch (promotionType) {
             case COUPON -> {
@@ -65,23 +64,15 @@ public class Promotion extends BaseTimeEntity {
                 }
             }
             case CODE -> {
-                if (discountType != DiscountType.PERCENT || discountValue > 100) {
+                if (discountType != DiscountType.PERCENT || this.discountValue > 100) {
                     throw new ProductException(INVALID_REQUEST);
                 }
 
-                discount = (int) (price * (discount / 100.0));
+                discountValue = (int) (price * (discountValue / 100.0));
             }
             default -> throw new ProductException(INVALID_PROMOTION_TYPE);
         }
 
-        return new PriceDto(discountPrice(price, discount), discount);
-    }
-
-    private Integer discountPrice(Integer price, Integer discount) {
-        if (price < discount) {
-            throw new ProductException(INVALID_DISCOUNT_PRICE);
-        }
-        price -= discount;
-        return price;
+        return discountValue;
     }
 }
