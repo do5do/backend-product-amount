@@ -283,7 +283,7 @@ class ProductServiceTest {
         // then
         assertThatThrownBy(() -> productService.getProductAmount(request))
                 .isInstanceOf(ProductException.class)
-                .hasMessageContaining(INVALID_REQUEST.getMessage());
+                .hasMessageContaining(INTERNAL_ERROR.getMessage());
     }
 
     @Test

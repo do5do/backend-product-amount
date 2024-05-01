@@ -3,7 +3,8 @@ package antigravity.domain.entity;
 import antigravity.domain.common.BaseTimeEntity;
 import antigravity.domain.type.DiscountType;
 import antigravity.domain.type.PromotionType;
-import antigravity.exception.ProductException;
+import antigravity.policy.discount.DiscountPolicy;
+import antigravity.policy.discount.DiscountPolicyFactory;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +12,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-
-import static antigravity.exception.ErrorCode.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -55,24 +54,7 @@ public class Promotion extends BaseTimeEntity {
     }
 
     public Integer getDiscountValue(Integer price) {
-        Integer discountValue = this.discountValue;
-
-        switch (promotionType) {
-            case COUPON -> {
-                if (discountType != DiscountType.WON) {
-                    throw new ProductException(INVALID_REQUEST);
-                }
-            }
-            case CODE -> {
-                if (discountType != DiscountType.PERCENT || this.discountValue > 100) {
-                    throw new ProductException(INVALID_REQUEST);
-                }
-
-                discountValue = (int) (price * (discountValue / 100.0));
-            }
-            default -> throw new ProductException(INVALID_PROMOTION_TYPE);
-        }
-
-        return discountValue;
+        DiscountPolicy discountPolicy = DiscountPolicyFactory.of(promotionType);
+        return discountPolicy.getDiscountValue(discountType, price, discountValue);
     }
 }
