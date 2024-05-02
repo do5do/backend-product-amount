@@ -11,8 +11,13 @@ import antigravity.repository.ProductRepository;
 import antigravity.repository.PromotionProductsRepository;
 import antigravity.repository.PromotionRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static antigravity.exception.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -110,13 +116,14 @@ class ProductServiceTest {
                 .hasMessageContaining(NOT_FOUND_PRODUCT.getMessage());
     }
 
-    @Test
-    @DisplayName("실패 - 허용되지 않은 상품 가격, 최소값보다 작은 경우 예외가 발생한다.")
-    void getProductAmount_invalid_price_min() {
+    @ParameterizedTest
+    @ValueSource(ints = {9000, 10_000_001})
+    @DisplayName("실패 - 허용되지 않은 상품 가격인 경우 예외가 발생한다.")
+    void getProductAmount_invalid_price_min(Integer price) {
         // given
         Product product = Product.builder()
                 .name("피팅노드상품")
-                .price(1000)
+                .price(price)
                 .build();
 
         given(productRepository.findById(productId))
@@ -129,75 +136,46 @@ class ProductServiceTest {
                 .hasMessageContaining(INVALID_PRODUCT_PRICE.getMessage());
     }
 
-    @Test
-    @DisplayName("실패 - 허용되지 않은 상품 가격, 최대값보다 큰 경우 예외가 발생한다.")
-    void getProductAmount_invalid_price_max() {
-        // given
-        Product product = Product.builder()
-                .name("피팅노드상품")
-                .price(10_000_001)
-                .build();
+    @Nested
+    @DisplayName("프로모션 기간 검증")
+    class NotPeriodPromotion {
+        static Stream<Arguments> provideDates() {
+            return Stream.of(
+                    // 시작 전
+                    Arguments.of(LocalDate.now().plusDays(1),
+                            LocalDate.now().plusMonths(1)),
+                    // 기간 지난
+                    Arguments.of(LocalDate.now().minusMonths(1),
+                            LocalDate.now().minusDays(1))
+            );
+        }
 
-        given(productRepository.findById(productId))
-                .willReturn(Optional.of(product));
+        @ParameterizedTest
+        @MethodSource("provideDates")
+        @DisplayName("실패 - 시작 전이거나 지난 프로모션이면 예외가 발생한다.")
+        void getProductAmount_notPeriod_promotion(LocalDate startDate, LocalDate endDate) {
+            // given
+            Promotion promotion = Promotion.builder()
+                    .promotionType(PromotionType.COUPON)
+                    .name("30000원 할인쿠폰")
+                    .discountType(DiscountType.WON)
+                    .discountValue(30000)
+                    .useStartedAt(startDate)
+                    .useEndedAt(endDate)
+                    .build();
 
-        // when
-        // then
-        assertThatThrownBy(() -> productService.getProductAmount(request))
-                .isInstanceOf(ProductException.class)
-                .hasMessageContaining(INVALID_PRODUCT_PRICE.getMessage());
-    }
+            given(productRepository.findById(productId))
+                    .willReturn(Optional.of(product));
 
-    @Test
-    @DisplayName("실패 - 시작 전인 프로모션이면 예외가 발생한다.")
-    void getProductAmount_promotion_startedAt_isAfter_now() {
-        // given
-        Promotion promotion = Promotion.builder()
-                .promotionType(PromotionType.COUPON)
-                .name("30000원 할인쿠폰")
-                .discountType(DiscountType.WON)
-                .discountValue(30000)
-                .useStartedAt(LocalDate.now().plusDays(1))
-                .useEndedAt(LocalDate.now().plusMonths(1))
-                .build();
+            given(promotionRepository.findByIdIn(couponIds))
+                    .willReturn(List.of(promotion));
 
-        given(productRepository.findById(productId))
-                .willReturn(Optional.of(product));
-
-        given(promotionRepository.findByIdIn(couponIds))
-                .willReturn(List.of(promotion));
-
-        // when
-        // then
-        assertThatThrownBy(() -> productService.getProductAmount(request))
-                .isInstanceOf(ProductException.class)
-                .hasMessageContaining(NOT_PERIOD_PROMOTION.getMessage());
-    }
-
-    @Test
-    @DisplayName("실패 - 기간이 지난 프로모션이면 예외가 발생한다.")
-    void getProductAmount_promotion_endedAt_isBefore_now() {
-        // given
-        Promotion promotion = Promotion.builder()
-                .promotionType(PromotionType.COUPON)
-                .name("30000원 할인쿠폰")
-                .discountType(DiscountType.WON)
-                .discountValue(30000)
-                .useStartedAt(LocalDate.now().minusMonths(1))
-                .useEndedAt(LocalDate.now().minusDays(1))
-                .build();
-
-        given(productRepository.findById(productId))
-                .willReturn(Optional.of(product));
-
-        given(promotionRepository.findByIdIn(couponIds))
-                .willReturn(List.of(promotion));
-
-        // when
-        // then
-        assertThatThrownBy(() -> productService.getProductAmount(request))
-                .isInstanceOf(ProductException.class)
-                .hasMessageContaining(NOT_PERIOD_PROMOTION.getMessage());
+            // when
+            // then
+            assertThatThrownBy(() -> productService.getProductAmount(request))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(NOT_PERIOD_PROMOTION.getMessage());
+        }
     }
 
     @Test
@@ -249,41 +227,54 @@ class ProductServiceTest {
                 .hasMessageContaining(UNMATCHED_PROMOTION.getMessage());
     }
 
-    @Test
-    @DisplayName("실패 - 프로모션 타입과 연관되지 않은 할인 타입이면 예외가 발생한다.")
-    void getProductAmount_unmatched_type() {
-        // given
-        Product product = Product.builder()
-                .name("피팅노드상품")
-                .price(215000)
-                .build();
+    @Nested
+    @DisplayName("프로모션 타입 검증")
+    class UnmatchedType {
+        static Stream<Arguments> provideTypes() {
+            return Stream.of(
+                    Arguments.of(PromotionType.CODE, DiscountType.WON),
+                    Arguments.of(PromotionType.COUPON, DiscountType.PERCENT)
+            );
+        }
 
-        Promotion promotion = Promotion.builder()
-                .promotionType(PromotionType.CODE)
-                .name("15% 할인코드")
-                .discountType(DiscountType.WON)
-                .discountValue(15)
-                .useStartedAt(LocalDate.now())
-                .useEndedAt(LocalDate.now().plusMonths(1))
-                .build();
+        @ParameterizedTest
+        @MethodSource("provideTypes")
+        @DisplayName("실패 - 프로모션 타입과 연관되지 않은 할인 타입이면 예외가 발생한다.")
+        void getProductAmount_unmatched_type(PromotionType promotionType,
+                                             DiscountType discountType) {
+            // given
+            Product product = Product.builder()
+                    .name("피팅노드상품")
+                    .price(215000)
+                    .build();
 
-        List<Promotion> promotions = List.of(promotion);
+            Promotion promotion = Promotion.builder()
+                    .promotionType(promotionType)
+                    .name("15% 할인코드")
+                    .discountType(discountType)
+                    .discountValue(15)
+                    .useStartedAt(LocalDate.now())
+                    .useEndedAt(LocalDate.now().plusMonths(1))
+                    .build();
 
-        given(productRepository.findById(productId))
-                .willReturn(Optional.of(product));
+            List<Promotion> promotions = List.of(promotion);
 
-        given(promotionRepository.findByIdIn(couponIds))
-                .willReturn(promotions);
+            given(productRepository.findById(productId))
+                    .willReturn(Optional.of(product));
 
-        given(promotionProductsRepository
-                .existsByProductAndPromotionIn(product, promotions))
-                .willReturn(true);
+            given(promotionRepository.findByIdIn(couponIds))
+                    .willReturn(promotions);
 
-        // when
-        // then
-        assertThatThrownBy(() -> productService.getProductAmount(request))
-                .isInstanceOf(ProductException.class)
-                .hasMessageContaining(INTERNAL_ERROR.getMessage());
+            given(promotionProductsRepository
+                    .existsByProductAndPromotionIn(product, promotions))
+                    .willReturn(true);
+
+            // when
+            // then
+            assertThatThrownBy(() -> productService.getProductAmount(request))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(INTERNAL_ERROR.getMessage());
+        }
     }
 
     @Test
